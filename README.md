@@ -89,8 +89,8 @@ Menu options summary:
 ### 2.1 Requirements
 - Python 3
 - Tkinter (bundled on Windows)
-- Oracle XE installed locally (e.g., 21c XE)
-- Oracle Instant Client (Basic or Basic Light)
+[- Oracle XE installed locally (e.g., 21c XE)](https://www.oracle.com/ca-en/database/technologies/xe-downloads.html)
+[- Oracle Instant Client (Basic or Basic Light)](https://www.oracle.com/ca-en/database/technologies/instant-client/downloads.html)
 - Python package `cx_Oracle`:
 ```bash
 pip install cx_Oracle
@@ -145,7 +145,7 @@ Main area: Treeview grid with rows and vertical scrollbar.
 
 Row actions (bottom):
 - Add Row — opens a form (one field per column); DATE = `YYYY-MM-DD`; inserts row (disabled for read-only view)
-- Edit Row — edit selected row; first column treated as PK, used in WHERE clause
+- Edit Row — edit selected row; first column treated as PK, used in WHERE clause. note when editing dates, remove the trailing `0:00:00` to avoid a date error.
 - Delete Row — deletes selected row based on first column (PK)
 - Refresh — reloads current table/view
 
@@ -161,32 +161,3 @@ Row actions (bottom):
 Shows connection events, schema actions, seeding progress, errors, and user actions.
 
 ---
-
-## 3. Quick Reference / TL;DR
-
-CLI (`a9cli.py`) — TMU Oracle on moon
-- Create `db.env` with:
-```bash
-export DB_CONN='username/password@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle.scs.ryerson.ca)(PORT=1521))(CONNECT_DATA=(SID=orcl)))'
-```
-- Make script executable:
-```bash
-chmod u+rwx a9cli.py
-```
-- Each shell:
-```bash
-source db.env
-./a9cli.py
-```
-
-GUI (`a9gui.py`) — Local Oracle XE
-- Install Oracle XE and Instant Client
-- Install `cx_Oracle`
-- Edit `a9gui.py` to set `cx_Oracle.init_oracle_client(lib_dir=...)`
-- Run:
-```bash
-python a9gui.py
-```
-- Use login dialog to connect and GUI tabs to create/drop schema, seed data, browse/edit rows, and run SQL.
-
-You now have CLI (TMU Oracle) and GUI (local XE) front-ends sharing the same Library DBMS schema and seed data.
