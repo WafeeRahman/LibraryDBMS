@@ -1,10 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import cx_Oracle
-
-# ============================================================
-# GLOBAL STATE
-# ============================================================
+#Wafee Rahman, Richie Au, Umair Ansar
 connection = None
 cursor = None
 oracle_client_initialized = False  # ensure init_oracle_client only once
@@ -27,9 +24,7 @@ current_table = None
 current_columns = []  # column names in the table Treeview
 
 
-# ============================================================
-# UTILITY: STATUS + LOG
-# ============================================================
+
 def set_status(msg):
     status_var.set(msg)
 
@@ -41,9 +36,7 @@ def log(msg):
     log_text.configure(state="disabled")
 
 
-# ============================================================
-# LOGIN DIALOG (replaces old connect_db button)
-# ============================================================
+
 def show_login_dialog(root):
     """
     Show a modal login dialog.
@@ -165,9 +158,7 @@ def show_login_dialog(root):
     dlg.wait_window()  # Make it modal
 
 
-# ============================================================
-# DDL: CREATE / DROP TABLES & VIEW
-# ============================================================
+
 def create_tables():
     if cursor is None:
         messagebox.showwarning("Not Connected", "Connect to the database first.")
@@ -382,9 +373,6 @@ def drop_tables():
     log("Drop completed.")
 
 
-# ============================================================
-# SEED DATA (unchanged, but staff 1–10 matches all CatalogedBy)
-# ============================================================
 def seed_data():
     if cursor is None:
         messagebox.showwarning("Not Connected", "Connect to the database first.")
@@ -624,9 +612,7 @@ def seed_data():
     log("Seed data inserted.")
 
 
-# ============================================================
-# METADATA & QUERY HELPERS
-# ============================================================
+
 def get_table_metadata(table_name):
     """
     Returns list of (column_name, data_type) for a table/view.
@@ -655,10 +641,6 @@ def run_query(sql, params=None):
     return cols, rows
 
 
-# ============================================================
-# BROWSE TAB: LOAD / ADD / EDIT / DELETE / SEARCH
-# (unchanged)
-# ============================================================
 def load_table():
     global current_table, current_columns
     if cursor is None:
@@ -927,9 +909,7 @@ def search_table():
     log(f"Search '{term}' in {current_table}: {len(rows)} row(s) found.")
 
 
-# ============================================================
-# SQL CONSOLE TAB
-# ============================================================
+
 def execute_sql_console():
     if cursor is None:
         messagebox.showwarning("Not Connected", "Connect to the database first.")
@@ -971,9 +951,6 @@ def execute_sql_console():
         log("SQL console error: " + str(e))
 
 
-# ============================================================
-# GUI CONSTRUCTION
-# ============================================================
 def build_gui():
     global root, status_var, log_text
     global table_var, tree, search_var
@@ -1099,9 +1076,7 @@ def build_gui():
     return root
 
 
-# ============================================================
-# MAIN
-# ============================================================
+
 if __name__ == "__main__":
     root = build_gui()
     # Show login dialog immediately; app closes if user cancels before connecting

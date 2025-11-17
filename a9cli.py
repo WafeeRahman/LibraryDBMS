@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+#Wafee Rahman , Richie Au , Umair Ansar
+
 """
 Library DBMS – Python CLI (Linux, sqlplus-based, no cx_Oracle)
 
