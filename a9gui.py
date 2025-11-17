@@ -2,14 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import cx_Oracle
 
-# ============================================================
+
 # CPS510 – Library DBMS GUI
 #   Schema in 3NF / BCNF with:
 #   Staff, Author, Address, Customer, Record, RecordAuthor,
 #   LibraryInventory, Book, EBook, DVD, Loans, RecordAvailableStock
 #
 #   Wafee Rahman, Richie Au, Umair Ansar
-# ============================================================
+
 
 connection = None
 cursor = None
@@ -34,9 +34,9 @@ current_table = None
 current_columns = []  # column names in the table Treeview
 
 
-# ============================================================
+
 # STATUS + LOG
-# ============================================================
+
 def set_status(msg):
     status_var.set(msg)
 
@@ -1198,9 +1198,8 @@ def build_gui():
     return root
 
 
-# ============================================================
 # MAIN
-# ============================================================
+
 if __name__ == "__main__":
     root = build_gui()
     # Show login dialog immediately; app closes if user cancels before connecting
