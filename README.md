@@ -95,6 +95,7 @@ Menu options summary:
 ```bash
 pip install cx_Oracle
 ```
+You may need to install microsoft visual c++ to install cx_Oracle. 
 
 ### 2.2 Configure Oracle Instant Client path
 Edit `a9gui.py` and set `lib_dir` to your Instant Client path, e.g.:
