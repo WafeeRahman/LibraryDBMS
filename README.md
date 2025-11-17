@@ -107,7 +107,7 @@ cx_Oracle.init_oracle_client(
 Ensure the directory contains `oci.dll` (Windows) or appropriate shared libs.
 
 ### 2.3 Setup Oracle XE & credentials
-![GUI Login Page](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20202143.png)
+![GUI Login Page](https://github.com/WafeeRahman/librarydbms/blob/main/LoginPage.png)
 You need a user with privileges to create tables/views and insert data. On the GUI login provide:
 - Username
 - Password
@@ -127,7 +127,7 @@ Login dialog appears; on successful connect the main GUI will show connection st
 The GUI has three main tabs plus a log panel: Schema, Browse & Edit, SQL Console.
 
 #### 2.5.1 Schema Tab
-![GUI Schema Tab](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20203031.png)
+![GUI Schema Tab](https://github.com/WafeeRahman/librarydbms/blob/main/SchemaPage.png)
 Buttons:
 - Create Tables & View — creates the BCNF/3NF tables and view
 - Drop Tables & View — drops view and tables in correct order
@@ -136,7 +136,7 @@ Buttons:
 Note: DATE fields in forms expect `YYYY-MM-DD`.
 
 #### 2.5.2 Browse & Edit Tab
-![GUI Edit Tab](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20202834.png)
+![GUI Edit Tab](https://github.com/WafeeRahman/librarydbms/blob/main/TablePage.png)
 
 Top controls:
 - Table/View dropdown (choices: `STAFF`, `AUTHOR`, `CUSTOMER`, `RECORD`, `RECORDAUTHOR`, `LIBRARYINVENTORY`, `BOOK`, `EBOOK`, `DVD`, `LOANS`, `RECORDAVAILABLESTOCK`)
@@ -156,7 +156,7 @@ Row actions (bottom):
 `RECORDAVAILABLESTOCK` view is read-only.
 
 #### 2.5.3 SQL Console Tab
-![GUI SQL Tab](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20203010.png)
+![GUI SQL Tab](https://github.com/WafeeRahman/librarydbms/blob/main/SQLPage.png)
 - Multiline SQL editor
 - Execute SQL:
     - If statement begins with `SELECT` (case-insensitive): runs and displays result set
