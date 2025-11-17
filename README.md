@@ -107,7 +107,7 @@ cx_Oracle.init_oracle_client(
 Ensure the directory contains `oci.dll` (Windows) or appropriate shared libs.
 
 ### 2.3 Setup Oracle XE & credentials
-[GUI Login PAhge](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20202143.png)
+![GUI Login Page](https://github.com/WafeeRahman/librarydbms/blob/main/Screenshot%202025-11-16%20202143.png)
 You need a user with privileges to create tables/views and insert data. On the GUI login provide:
 - Username
 - Password
