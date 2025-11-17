@@ -1,7 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import cx_Oracle
-#Wafee Rahman, Richie Au, Umair Ansar
+
+# ============================================================
+# CPS510 – Library DBMS GUI
+#   Schema in 3NF / BCNF with:
+#   Staff, Author, Address, Customer, Record, RecordAuthor,
+#   LibraryInventory, Book, EBook, DVD, Loans, RecordAvailableStock
+#
+#   Wafee Rahman, Richie Au, Umair Ansar
+# ============================================================
+
 connection = None
 cursor = None
 oracle_client_initialized = False  # ensure init_oracle_client only once
@@ -9,6 +18,7 @@ oracle_client_initialized = False  # ensure init_oracle_client only once
 TABLE_NAMES = [
     "STAFF",
     "AUTHOR",
+    "ADDRESS",
     "CUSTOMER",
     "RECORD",
     "RECORDAUTHOR",
@@ -24,7 +34,9 @@ current_table = None
 current_columns = []  # column names in the table Treeview
 
 
-
+# ============================================================
+# STATUS + LOG
+# ============================================================
 def set_status(msg):
     status_var.set(msg)
 
@@ -37,6 +49,8 @@ def log(msg):
 
 
 
+# LOGIN DIALOG (runs once on startup)
+
 def show_login_dialog(root):
     """
     Show a modal login dialog.
@@ -46,7 +60,6 @@ def show_login_dialog(root):
     global connection, cursor, oracle_client_initialized
 
     if connection is not None:
-        # Already connected (shouldn't really happen on startup, but safe-guard)
         return
 
     dlg = tk.Toplevel(root)
@@ -105,7 +118,7 @@ def show_login_dialog(root):
         # Initialize Oracle client once
         if not oracle_client_initialized:
             try:
-                # Adjust this path to your actual Instant Client directory if needed
+                # TODO: Replace this path with your actual Instant Client directory
                 cx_Oracle.init_oracle_client(
                     lib_dir=r"D:\Chrome Downloads\instantclient-basic-windows.x64-23.9.0.25.07\instantclient_23_9"
                 )
@@ -159,6 +172,7 @@ def show_login_dialog(root):
 
 
 
+# DDL: CREATE / DROP TABLES & VIEW 
 def create_tables():
     if cursor is None:
         messagebox.showwarning("Not Connected", "Connect to the database first.")
@@ -182,89 +196,102 @@ def create_tables():
           AuthorName VARCHAR2(100) NOT NULL
         )
         """,
-        # 3) Customer
+        # 3) Address
+        """
+        CREATE TABLE Address (
+          AddressID  INT           PRIMARY KEY,
+          Street     VARCHAR2(100),
+          City       VARCHAR2(100),
+          Province   VARCHAR2(50),
+          PostalCode VARCHAR2(10)
+        )
+        """,
+        # 4) Customer
         """
         CREATE TABLE Customer (
-           CustomerID  NUMBER(9)  PRIMARY KEY,
-           FirstName   VARCHAR2(50) NOT NULL,
-           LastName    VARCHAR2(50) NOT NULL,
-           PhoneNumber VARCHAR2(10),
-           Address     VARCHAR2(254)
+          CustomerID  NUMBER(9)    PRIMARY KEY,
+          FirstName   VARCHAR2(50) NOT NULL,
+          LastName    VARCHAR2(50) NOT NULL,
+          PhoneNumber VARCHAR2(15),
+          AddressID   INT,
+          CONSTRAINT fk_Customer_Address
+            FOREIGN KEY (AddressID)
+            REFERENCES Address(AddressID)
         )
         """,
-        # 4) Record
+        # 5) Record
         """
         CREATE TABLE Record (
-            RecordID          INT           PRIMARY KEY,
-            Title             VARCHAR2(255) NOT NULL,
-            Genre             VARCHAR2(100),
-            DateOfPublication DATE,
-            CatalogedBy       INT           NOT NULL,
-            CONSTRAINT fk_Record_Staff
-                FOREIGN KEY (CatalogedBy)
-                REFERENCES Staff(StaffID)
+           RecordID          INT           PRIMARY KEY,
+           Title             VARCHAR2(255) NOT NULL,
+           Genre             VARCHAR2(100),
+           DateOfPublication DATE,
+           CatalogedBy       INT           NOT NULL,
+           CONSTRAINT fk_Record_Staff
+              FOREIGN KEY (CatalogedBy)
+              REFERENCES Staff(StaffID)
         )
         """,
-        # 5) RecordAuthor
+        # 6) RecordAuthor
         """
         CREATE TABLE RecordAuthor (
-            RecordID INT NOT NULL,
-            AuthorID INT NOT NULL,
-            CONSTRAINT pk_RecordAuthor
-                PRIMARY KEY (RecordID, AuthorID),
-            CONSTRAINT fk_RA_Record
-                FOREIGN KEY (RecordID)
-                REFERENCES Record(RecordID),
-            CONSTRAINT fk_RA_Author
-                FOREIGN KEY (AuthorID)
-                REFERENCES Author(AuthorID)
+           RecordID INT NOT NULL,
+           AuthorID INT NOT NULL,
+           CONSTRAINT pk_RecordAuthor
+              PRIMARY KEY (RecordID, AuthorID),
+           CONSTRAINT fk_RA_Record
+              FOREIGN KEY (RecordID)
+              REFERENCES Record(RecordID),
+           CONSTRAINT fk_RA_Author
+              FOREIGN KEY (AuthorID)
+              REFERENCES Author(AuthorID)
         )
         """,
-        # 6) LibraryInventory
+        # 7) LibraryInventory
         """
         CREATE TABLE LibraryInventory (
-            ItemID     INT PRIMARY KEY,
-            RecordID   INT NOT NULL,
-            TotalStock INT DEFAULT 1,
-            CONSTRAINT fk_LI_Record
-                FOREIGN KEY (RecordID)
-                REFERENCES Record(RecordID)
+           ItemID     INT PRIMARY KEY,
+           RecordID   INT NOT NULL,
+           TotalStock INT DEFAULT 1,
+           CONSTRAINT fk_LI_Record
+              FOREIGN KEY (RecordID)
+              REFERENCES Record(RecordID)
         )
         """,
-        # 7) Book
+        # 8) Book
         """
         CREATE TABLE Book (
-            RecordID INT PRIMARY KEY,
-            ISBN     VARCHAR2(20),
-            Binding  VARCHAR2(50),
-            CONSTRAINT fk_Book_Record
-                FOREIGN KEY (RecordID)
-                REFERENCES Record(RecordID)
+           RecordID INT PRIMARY KEY,
+           DRMType  VARCHAR2(50),
+           Binding  VARCHAR2(50),
+           CONSTRAINT fk_Book_Record
+              FOREIGN KEY (RecordID)
+              REFERENCES Record(RecordID)
         )
         """,
-        # 8) EBook
+        # 9) EBook
         """
         CREATE TABLE EBook (
-            RecordID   INT PRIMARY KEY,
-            DRMType    VARCHAR2(50),
-            FileFormat VARCHAR2(20),
-            CONSTRAINT fk_EBook_Record
-                FOREIGN KEY (RecordID)
-                REFERENCES Record(RecordID)
+           RecordID   INT PRIMARY KEY,
+           DRMType    VARCHAR2(50),
+           FileFormat VARCHAR2(20),
+           CONSTRAINT fk_EBook_Record
+              FOREIGN KEY (RecordID)
+              REFERENCES Record(RecordID)
         )
         """,
-        # 9) DVD
+        # 10) DVD
         """
         CREATE TABLE DVD (
-            RecordID INT PRIMARY KEY,
-            RunTime  INT,
-            PGRating VARCHAR2(10),
-            CONSTRAINT fk_DVD_Record
-                FOREIGN KEY (RecordID)
-                REFERENCES Record(RecordID)
+           RecordID INT PRIMARY KEY,
+           RunTime  INT,
+           PGRating VARCHAR2(10),
+           CONSTRAINT fk_DVD_Record
+              FOREIGN KEY (RecordID)
+              REFERENCES Record(RecordID)
         )
         """,
-        # 10) Loans
+        # 11) Loans
         """
         CREATE TABLE Loans (
           loanId     NUMBER       PRIMARY KEY,
@@ -276,13 +303,13 @@ def create_tables():
           overdue    CHAR(1)      DEFAULT 'N' CHECK (overdue IN ('Y','N')),
 
           CONSTRAINT fkLoansCustomer FOREIGN KEY (customerId)
-            REFERENCES Customer(CustomerID) ON DELETE CASCADE,
+           REFERENCES Customer(CustomerID) ON DELETE CASCADE,
 
           CONSTRAINT fkLoansItem FOREIGN KEY (itemId)
-            REFERENCES LibraryInventory(ItemID) ON DELETE CASCADE,
+           REFERENCES LibraryInventory(ItemID) ON DELETE CASCADE,
 
           CONSTRAINT fkLoansStaff FOREIGN KEY (staffId)
-            REFERENCES Staff(StaffID),
+           REFERENCES Staff(StaffID),
 
           CONSTRAINT chkDueDate CHECK (dueDate > loanDate)
         )
@@ -308,7 +335,7 @@ def create_tables():
       li.TotalStock                         AS TotalCopies,
       NVL(al.active_loans, 0)               AS ActiveLoans,
       GREATEST(li.TotalStock - NVL(al.active_loans, 0), 0)
-        AS AvailableStock
+       AS AvailableStock
     FROM Record r
     JOIN LibraryInventory li
       ON li.RecordID = r.RecordID
@@ -357,6 +384,7 @@ def drop_tables():
         "RecordAuthor",
         "Record",
         "Customer",
+        "Address",
         "Author",
         "Staff",
     ]
@@ -373,12 +401,14 @@ def drop_tables():
     log("Drop completed.")
 
 
+
+# SEED DATA 
 def seed_data():
     if cursor is None:
         messagebox.showwarning("Not Connected", "Connect to the database first.")
         return
 
-    log("Seeding data (per-record)...")
+    log("Seeding data...")
     set_status("Seeding data...")
 
     # 1) STAFF
@@ -411,48 +441,69 @@ def seed_data():
     ]
     cursor.executemany("INSERT INTO Author (AuthorID, AuthorName) VALUES (:1, :2)", author_rows)
 
-    # 3) CUSTOMERS
-    customer_rows = [
-        (1001, "John", "Doe", "4165550001", "123 King St, Toronto"),
-        (1002, "Jane", "Smith", "4165550002", "456 Queen St, Toronto"),
-        (1003, "Michael", "Brown", "4165550003", "789 Dundas St, Toronto"),
-        (1004, "Sarah", "Lee", "4165550004", "12 Bloor St, Toronto"),
-        (1005, "Daniel", "Kim", "4165550005", "34 Spadina Ave, Toronto"),
-        (1006, "Emily", "Wilson", "4165550006", "56 Yonge St, Toronto"),
-        (1007, "Kevin", "Nguyen", "4165550007", "78 Bay St, Toronto"),
-        (1008, "Olivia", "Patel", "4165550008", "90 College St, Toronto"),
-        (1009, "Liam", "Garcia", "4165550009", "101 Front St, Toronto"),
-        (1010, "Sophia", "Lopez", "4165550010", "202 King St, Toronto"),
+    # 3) ADDRESS
+    address_rows = [
+        (1, "123 King St", "Toronto", "ON", "M5H 1A1"),
+        (2, "456 Queen St", "Toronto", "ON", "M5V 2B2"),
+        (3, "789 Dundas St", "Toronto", "ON", "M5T 1G4"),
+        (4, "12 Bloor St", "Toronto", "ON", "M4W 1A8"),
+        (5, "34 Spadina Ave", "Toronto", "ON", "M5V 2J4"),
+        (6, "56 Yonge St", "Toronto", "ON", "M5E 1G5"),
+        (7, "78 Bay St", "Toronto", "ON", "M5J 2N8"),
+        (8, "90 College St", "Toronto", "ON", "M5G 1L5"),
+        (9, "101 Front St", "Toronto", "ON", "M5J 2X4"),
+        (10, "202 King St", "Toronto", "ON", "M5H 3T4"),
     ]
     cursor.executemany(
         """
-        INSERT INTO Customer (CustomerID, FirstName, LastName, PhoneNumber, Address)
+        INSERT INTO Address (AddressID, Street, City, Province, PostalCode)
+        VALUES (:1, :2, :3, :4, :5)
+        """,
+        address_rows,
+    )
+
+    # 4) CUSTOMERS (each linked to an AddressID)
+    customer_rows = [
+        (1001, "John", "Doe", "4165550001", 1),
+        (1002, "Jane", "Smith", "4165550002", 2),
+        (1003, "Michael", "Brown", "4165550003", 3),
+        (1004, "Sarah", "Lee", "4165550004", 4),
+        (1005, "Daniel", "Kim", "4165550005", 5),
+        (1006, "Emily", "Wilson", "4165550006", 6),
+        (1007, "Kevin", "Nguyen", "4165550007", 7),
+        (1008, "Olivia", "Patel", "4165550008", 8),
+        (1009, "Liam", "Garcia", "4165550009", 9),
+        (1010, "Sophia", "Lopez", "4165550010", 10),
+    ]
+    cursor.executemany(
+        """
+        INSERT INTO Customer (CustomerID, FirstName, LastName, PhoneNumber, AddressID)
         VALUES (:1, :2, :3, :4, :5)
         """,
         customer_rows,
     )
 
-    # 4) BOOK RECORDS
+    # 5) BOOK RECORDS (physical books – Book with DRMType + Binding)
     book_items = [
-        # (RecordID, ItemID, Title, Genre, PubDate, StaffID, AuthorID, ISBN, Binding, TotalStock)
-        (1, 101, "1984", "Dystopian", "1949-06-08", 1, 1, "9780451524935", "Paperback", 4),
-        (2, 102, "Animal Farm", "Political Satire", "1945-08-17", 1, 1, "9780451526342", "Paperback", 3),
-        (3, 103, "Pride and Prejudice", "Romance", "1813-01-28", 2, 2, "9780141439518", "Hardcover", 3),
-        (4, 104, "Harry Potter and the Philosopher's Stone", "Fantasy", "1997-06-26", 3, 3, "9780747532699", "Hardcover", 5),
-        (5, 105, "Harry Potter and the Chamber of Secrets", "Fantasy", "1998-07-02", 3, 3, "9780747538493", "Paperback", 4),
-        (6, 106, "The Hobbit", "Fantasy", "1937-09-21", 4, 4, "9780261102217", "Hardcover", 3),
-        (7, 107, "The Fellowship of the Ring", "Fantasy", "1954-07-29", 4, 4, "9780261102354", "Hardcover", 2),
-        (8, 108, "Murder on the Orient Express", "Mystery", "1934-01-01", 5, 5, "9780007119318", "Paperback", 3),
-        (9, 109, "The Shining", "Horror", "1977-01-28", 6, 6, "9780307743657", "Paperback", 2),
-        (10, 110, "IT", "Horror", "1986-09-15", 6, 6, "9781501142970", "Paperback", 2),
-        (11, 111, "Foundation", "Science Fiction", "1951-06-01", 7, 7, "9780553293357", "Paperback", 3),
-        (12, 112, "I, Robot", "Science Fiction", "1950-12-02", 7, 7, "9780553382563", "Paperback", 3),
-        (13, 113, "Sapiens", "Non-Fiction", "2011-01-01", 2, 8, "9780771038501", "Paperback", 4),
-        (14, 114, "Homo Deus", "Non-Fiction", "2015-01-01", 2, 8, "9780771038693", "Paperback", 3),
-        (15, 115, "Outliers", "Non-Fiction", "2008-11-18", 9, 9, "9780316017923", "Paperback", 2),
-        (16, 116, "The Tipping Point", "Non-Fiction", "2000-03-01", 9, 9, "9780316346627", "Paperback", 2),
-        (17, 117, "American Gods", "Fantasy", "2001-06-19", 10, 10, "9780380789030", "Paperback", 3),
-        (18, 118, "Coraline", "Fantasy", "2002-08-02", 10, 10, "9780380807345", "Paperback", 3),
+        # (RecordID, ItemID, Title, Genre, PubDate, StaffID, AuthorID, DRMType, Binding, TotalStock)
+        (1, 101, "1984", "Dystopian", "1949-06-08", 1, 1, "PhysicalCopy", "Paperback", 4),
+        (2, 102, "Animal Farm", "Political Satire", "1945-08-17", 1, 1, "PhysicalCopy", "Paperback", 3),
+        (3, 103, "Pride and Prejudice", "Romance", "1813-01-28", 2, 2, "PhysicalCopy", "Hardcover", 3),
+        (4, 104, "Harry Potter and the Philosopher's Stone", "Fantasy", "1997-06-26", 3, 3, "PhysicalCopy", "Hardcover", 5),
+        (5, 105, "Harry Potter and the Chamber of Secrets", "Fantasy", "1998-07-02", 3, 3, "PhysicalCopy", "Paperback", 4),
+        (6, 106, "The Hobbit", "Fantasy", "1937-09-21", 4, 4, "PhysicalCopy", "Hardcover", 3),
+        (7, 107, "The Fellowship of the Ring", "Fantasy", "1954-07-29", 4, 4, "PhysicalCopy", "Hardcover", 2),
+        (8, 108, "Murder on the Orient Express", "Mystery", "1934-01-01", 5, 5, "PhysicalCopy", "Paperback", 3),
+        (9, 109, "The Shining", "Horror", "1977-01-28", 6, 6, "PhysicalCopy", "Paperback", 2),
+        (10, 110, "IT", "Horror", "1986-09-15", 6, 6, "PhysicalCopy", "Paperback", 2),
+        (11, 111, "Foundation", "Science Fiction", "1951-06-01", 7, 7, "PhysicalCopy", "Paperback", 3),
+        (12, 112, "I, Robot", "Science Fiction", "1950-12-02", 7, 7, "PhysicalCopy", "Paperback", 3),
+        (13, 113, "Sapiens", "Non-Fiction", "2011-01-01", 2, 8, "PhysicalCopy", "Paperback", 4),
+        (14, 114, "Homo Deus", "Non-Fiction", "2015-01-01", 2, 8, "PhysicalCopy", "Paperback", 3),
+        (15, 115, "Outliers", "Non-Fiction", "2008-11-18", 9, 9, "PhysicalCopy", "Paperback", 2),
+        (16, 116, "The Tipping Point", "Non-Fiction", "2000-03-01", 9, 9, "PhysicalCopy", "Paperback", 2),
+        (17, 117, "American Gods", "Fantasy", "2001-06-19", 10, 10, "PhysicalCopy", "Paperback", 3),
+        (18, 118, "Coraline", "Fantasy", "2002-08-02", 10, 10, "PhysicalCopy", "Paperback", 3),
     ]
 
     for (
@@ -463,7 +514,7 @@ def seed_data():
         pub_date,
         staff_id,
         author_id,
-        isbn,
+        drm_type,
         binding,
         total_stock,
     ) in book_items:
@@ -503,17 +554,17 @@ def seed_data():
 
         cursor.execute(
             """
-            INSERT INTO Book (RecordID, ISBN, Binding)
-            VALUES (:record_id, :isbn, :binding)
+            INSERT INTO Book (RecordID, DRMType, Binding)
+            VALUES (:record_id, :drm_type, :binding)
             """,
             {
                 "record_id": record_id,
-                "isbn": isbn,
+                "drm_type": drm_type,
                 "binding": binding,
             },
         )
 
-    # 5) DVD RECORDS
+    # 6) DVD RECORDS
     dvd_items = [
         # (RecordID, ItemID, Title, Genre, PubDate, StaffID, AuthorID, RunTime, Rating, TotalStock)
         (19, 119, "Inception", "Sci-Fi Movie", "2010-07-16", 4, 10, 148, "PG-13", 5),
@@ -578,7 +629,72 @@ def seed_data():
             },
         )
 
-    # 6) LOANS
+    # 7) EBOOK RECORDS (purely digital; good for exploring EBook + subtype)
+    ebook_items = [
+        # (RecordID, ItemID, Title, Genre, PubDate, StaffID, AuthorID, DRMType, FileFormat, TotalStock)
+        (21, 201, "Digital Fortress", "Thriller", "1998-02-01", 1, 6, "AdobeDRM", "EPUB", 50),
+        (22, 202, "The Pragmatic Programmer", "Technology", "1999-10-30", 2, 7, "Watermark", "PDF", 50),
+    ]
+
+    for (
+        record_id,
+        item_id,
+        title,
+        genre,
+        pub_date,
+        staff_id,
+        author_id,
+        drm_type,
+        file_format,
+        total_stock,
+    ) in ebook_items:
+        cursor.execute(
+            """
+            INSERT INTO Record (RecordID, Title, Genre, DateOfPublication, CatalogedBy)
+            VALUES (:record_id, :title, :genre, TO_DATE(:pub_date, 'YYYY-MM-DD'), :staff_id)
+            """,
+            {
+                "record_id": record_id,
+                "title": title,
+                "genre": genre,
+                "pub_date": pub_date,
+                "staff_id": staff_id,
+            },
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO RecordAuthor (RecordID, AuthorID)
+            VALUES (:record_id, :author_id)
+            """,
+            {"record_id": record_id, "author_id": author_id},
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO LibraryInventory (ItemID, RecordID, TotalStock)
+            VALUES (:item_id, :record_id, :total_stock)
+            """,
+            {
+                "item_id": item_id,
+                "record_id": record_id,
+                "total_stock": total_stock,
+            },
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO EBook (RecordID, DRMType, FileFormat)
+            VALUES (:record_id, :drm_type, :file_format)
+            """,
+            {
+                "record_id": record_id,
+                "drm_type": drm_type,
+                "file_format": file_format,
+            },
+        )
+
+    # 8) LOANS
     loan_rows = [
         (1, 1001, 101, 1, "2025-11-01", "2025-11-15", "Y"),
         (2, 1002, 104, 2, "2025-11-10", "2025-11-24", "N"),
@@ -613,6 +729,8 @@ def seed_data():
 
 
 
+# METADATA & QUERY HELPERS
+
 def get_table_metadata(table_name):
     """
     Returns list of (column_name, data_type) for a table/view.
@@ -640,6 +758,9 @@ def run_query(sql, params=None):
     cols = [d[0] for d in cursor.description]
     return cols, rows
 
+
+
+# BROWSE TAB: LOAD / ADD / EDIT / DELETE / SEARCH
 
 def load_table():
     global current_table, current_columns
@@ -890,7 +1011,6 @@ def search_table():
         log("Search error: " + str(e))
         return
 
-    # Update tree with search results
     global current_columns
     current_columns = cols
 
@@ -909,6 +1029,8 @@ def search_table():
     log(f"Search '{term}' in {current_table}: {len(rows)} row(s) found.")
 
 
+
+# SQL CONSOLE TAB
 
 def execute_sql_console():
     if cursor is None:
@@ -951,6 +1073,7 @@ def execute_sql_console():
         log("SQL console error: " + str(e))
 
 
+# BUILD GUI
 def build_gui():
     global root, status_var, log_text
     global table_var, tree, search_var
@@ -971,7 +1094,6 @@ def build_gui():
     schema_frame = ttk.Frame(notebook)
     notebook.add(schema_frame, text="Schema")
 
-    # (Connect button removed; we now login on startup)
     create_btn = ttk.Button(schema_frame, text="Create Tables & View", command=create_tables)
     create_btn.pack(pady=10)
 
@@ -1076,7 +1198,9 @@ def build_gui():
     return root
 
 
-
+# ============================================================
+# MAIN
+# ============================================================
 if __name__ == "__main__":
     root = build_gui()
     # Show login dialog immediately; app closes if user cancels before connecting
