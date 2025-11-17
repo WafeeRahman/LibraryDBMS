@@ -110,6 +110,8 @@ def drop_schema():
     /
     BEGIN EXECUTE IMMEDIATE 'DROP TABLE Customer CASCADE CONSTRAINTS PURGE';     EXCEPTION WHEN OTHERS THEN NULL; END;
     /
+    BEGIN EXECUTE IMMEDIATE 'DROP TABLE Address CASCADE CONSTRAINTS PURGE';      EXCEPTION WHEN OTHERS THEN NULL; END;
+    /
     BEGIN EXECUTE IMMEDIATE 'DROP TABLE Author CASCADE CONSTRAINTS PURGE';       EXCEPTION WHEN OTHERS THEN NULL; END;
     /
     BEGIN EXECUTE IMMEDIATE 'DROP TABLE Staff CASCADE CONSTRAINTS PURGE';        EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -138,13 +140,26 @@ def create_schema():
       AuthorName VARCHAR2(100) NOT NULL
     );
 
+    -- ADDRESS
+    CREATE TABLE Address (
+        AddressID  INT PRIMARY KEY,
+        Street     VARCHAR2(100) NOT NULL,
+        City       VARCHAR2(50)  NOT NULL,
+        Province   VARCHAR2(50),
+        PostalCode VARCHAR2(20)
+    );
+
     -- 3) CUSTOMER
     CREATE TABLE Customer (
-       CustomerID  NUMBER(9)  PRIMARY KEY,
-       FirstName   VARCHAR2(50) NOT NULL,
-       LastName    VARCHAR2(50) NOT NULL,
-       PhoneNumber VARCHAR2(10),
-       Address     VARCHAR2(254)
+      CustomerID   NUMBER(9)     PRIMARY KEY,
+      FirstName    VARCHAR2(50)  NOT NULL,
+      LastName     VARCHAR2(50)  NOT NULL,
+      PhoneNumber  VARCHAR2(10),
+      AddressID    INT,
+      CONSTRAINT fk_Customer_Address
+          FOREIGN KEY (AddressID)
+          REFERENCES Address(AddressID)
+          ON DELETE SET NULL
     );
 
     -- 4) RECORD (no AvailableStock; BCNF)
@@ -283,17 +298,29 @@ def seed_data():
     INSERT INTO Author (AuthorID, AuthorName) VALUES (9, 'Malcolm Gladwell');
     INSERT INTO Author (AuthorID, AuthorName) VALUES (10,'Neil Gaiman');
 
-    -- 3) CUSTOMERS (10)
-    INSERT INTO Customer VALUES (1001, 'John',   'Doe',    '4165550001', '123 King St, Toronto');
-    INSERT INTO Customer VALUES (1002, 'Jane',   'Smith',  '4165550002', '456 Queen St, Toronto');
-    INSERT INTO Customer VALUES (1003, 'Michael','Brown',  '4165550003', '789 Dundas St, Toronto');
-    INSERT INTO Customer VALUES (1004, 'Sarah',  'Lee',    '4165550004', '12 Bloor St, Toronto');
-    INSERT INTO Customer VALUES (1005, 'Daniel', 'Kim',    '4165550005', '34 Spadina Ave, Toronto');
-    INSERT INTO Customer VALUES (1006, 'Emily',  'Wilson', '4165550006', '56 Yonge St, Toronto');
-    INSERT INTO Customer VALUES (1007, 'Kevin',  'Nguyen', '4165550007', '78 Bay St, Toronto');
-    INSERT INTO Customer VALUES (1008, 'Olivia', 'Patel',  '4165550008', '90 College St, Toronto');
-    INSERT INTO Customer VALUES (1009, 'Liam',   'Garcia', '4165550009', '101 Front St, Toronto');
-    INSERT INTO Customer VALUES (1010, 'Sophia','Lopez',  '4165550010', '202 King St, Toronto');
+    -- ADDRESS
+    INSERT INTO Address VALUES (1, '123 King St', 'Toronto', 'ON', 'M5H 1A1');
+    INSERT INTO Address VALUES (2, '456 Queen St', 'Toronto', 'ON', 'M5V 2B2');
+    INSERT INTO Address VALUES (3, '789 Dundas St', 'Toronto', 'ON', 'M5T 1G4');
+    INSERT INTO Address VALUES (4, '12 Bloor St', 'Toronto', 'ON', 'M4W 1A8');
+    INSERT INTO Address VALUES (5, '34 Spadina Ave', 'Toronto', 'ON', 'M5V 2J4');
+    INSERT INTO Address VALUES (6, '56 Yonge St', 'Toronto', 'ON', 'M5E 1G5');
+    INSERT INTO Address VALUES (7, '78 Bay St', 'Toronto', 'ON', 'M5J 2N8');
+    INSERT INTO Address VALUES (8, '90 College St', 'Toronto', 'ON', 'M5G 1L5');
+    INSERT INTO Address VALUES (9, '101 Front St', 'Toronto', 'ON', 'M5J 2X4');
+    INSERT INTO Address VALUES (10, '202 King St', 'Toronto', 'ON', 'M5H 3T4');
+
+    -- 4) CUSTOMERS (each linked to AddressID)
+    INSERT INTO Customer VALUES (1001, 'John',   'Doe',    '4165550001', 1);
+    INSERT INTO Customer VALUES (1002, 'Jane',   'Smith',  '4165550002', 2);
+    INSERT INTO Customer VALUES (1003, 'Michael','Brown',  '4165550003', 3);
+    INSERT INTO Customer VALUES (1004, 'Sarah',  'Lee',    '4165550004', 4);
+    INSERT INTO Customer VALUES (1005, 'Daniel', 'Kim',    '4165550005', 5);
+    INSERT INTO Customer VALUES (1006, 'Emily',  'Wilson', '4165550006', 6);
+    INSERT INTO Customer VALUES (1007, 'Kevin',  'Nguyen', '4165550007', 7);
+    INSERT INTO Customer VALUES (1008, 'Olivia', 'Patel',  '4165550008', 8);
+    INSERT INTO Customer VALUES (1009, 'Liam',   'Garcia', '4165550009', 9);
+    INSERT INTO Customer VALUES (1010, 'Sophia', 'Lopez',  '4165550010', 10);
 
     -- 4) BOOK RECORDS (Record + RecordAuthor + Inventory + Book)
     -- (RecordID, ItemID, Title, Genre, PubDate, StaffID, AuthorID, ISBN, Binding, TotalStock)
